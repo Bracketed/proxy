@@ -1,0 +1,17 @@
+{
+	"extends": "@bracketed/typescript-config/extra-strict",
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"lib": ["ESNext"],
+		"target": "ESNext",
+		"paths": {
+			"#root/*": ["dist/*"]
+		},
+		"baseUrl": ".",
+		"rootDir": "./src",
+		"outDir": "./dist",
+		"skipLibCheck": true
+	},
+	"exclude": ["dist", "node_modules"]
+}

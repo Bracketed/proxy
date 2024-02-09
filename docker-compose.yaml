@@ -1,0 +1,12 @@
+version: '3.8'
+name: bracketed-proxy
+
+services:
+        proxy:
+                image: bracketed/proxy:latest
+                container_name: bracketed-proxy
+                restart: always
+                ports:
+                        - 3003:3003
+                environment:
+                        - EXPRESS_PORT=3003

@@ -1,0 +1,19 @@
+name: Code Validation
+run-name: Code Validation | ${{ github.actor }}
+
+on:
+        push:
+                tags:
+                        - 'v*'
+        schedule:
+                - cron: '0 0 * * 0'
+        workflow_dispatch:
+
+jobs:
+        check-code:
+                runs-on: ubuntu-latest
+                steps:
+                        - uses: actions/checkout@v3
+
+                        - run: docker build --tag bracketed/test:test .
+                          name: Running test docker build
