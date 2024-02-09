@@ -3,6 +3,8 @@
 A friendly discord webhook proxy to deploy on your server!
 This is yet to be updated to support caching etc, but what we have right now is pretty good!
 
+You can also view this on docker hub at <https://hub.docker.com/r/bracketed/proxy>!
+
 ENV Variables:
 
 - EXPRESS_PORT
