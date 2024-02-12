@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 const server = express();
+let TokenRequired = false;
 
 const CorsOptions: cors.CorsOptions = {
 	origin: '*',
@@ -20,6 +21,10 @@ if (!process.env.EXPRESS_PORT) {
 	process.exit();
 }
 
+if (process.env.PROXY_TOKEN) {
+	TokenRequired = true;
+}
+
 server.set('trust proxy', true);
 server.use(express.json());
 server.use(compression());
@@ -33,50 +38,54 @@ server.use((Request: Request, _Response: Response, next: NextFunction) => {
 });
 
 server.all('*/:id/:token', async (request: Request, response: Response) => {
-	if (request.params) {
-		if (request.params['id'] && request.params['token']) {
-			console.log(request.params['id'], request.params['token']);
-			const WebhookPost = await axios
-				.post(
-					`https://discord.com/api/webhooks/${request.params['id']}/${request.params['token']}`,
-					request.body,
-					{
-						headers: {
-							'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-							'Accept-Language': 'en-GB',
-							Referer: 'https://www.bracketed.co.uk',
-							'Sec-Fetch-Site': 'same-origin',
-							'Sec-Fetch-Mode': 'cors',
-							'Sec-Fetch-Dest': 'empty',
-							'Accept-Encoding': 'gzip, deflate, br',
-							Connection: 'keep-alive',
-							'Content-Type': 'application/json',
-						},
-					}
-				)
-				.then(() => true)
-				.catch(() => false);
+	if (TokenRequired) {
+		if (!request.headers['authorization']) return response.status(511).json(`AUTHENTICATION REQUIRED`);
+		if (request.headers['authorization'] === process.env.PROXY_TOKEN)
+			return response.status(511).json(`PROXY TOKEN INCORRECT`);
+	}
 
-			if (WebhookPost) return response.status(201).json('WEBHOOK SENT');
-			return response.status(500).json('WEBHOOK ERROR ON SEND');
-		} else {
-			let MISSING_PARAMS: string = '';
-
-			if (!request.params['id']) {
-				MISSING_PARAMS = 'Webhook ID';
-			} else if (!request.params['token']) {
-				MISSING_PARAMS = 'Webhook Token';
-			} else {
-				MISSING_PARAMS = 'Webhook ID and Token';
-			}
-
-			return response.status(422).json(`MISSING PARAMETERS: ${MISSING_PARAMS}`);
-		}
-	} else {
+	if (!request.params)
 		return response
 			.status(200)
 			.send('<h1><font size="300">Bracketed Proxy - Root</font></h1><p>cheesn\'t</p>');
+
+	if (!(request.params['id'] && request.params['token'])) {
+		let MISSING_PARAMS: string = '';
+
+		if (!request.params['id']) {
+			MISSING_PARAMS = 'Webhook ID';
+		} else if (!request.params['token']) {
+			MISSING_PARAMS = 'Webhook Token';
+		} else {
+			MISSING_PARAMS = 'Webhook ID and Token';
+		}
+
+		return response.status(422).json(`MISSING PARAMETERS: ${MISSING_PARAMS}`);
 	}
+
+	const WebhookPost = await axios
+		.post(
+			`https://discord.com/api/webhooks/${request.params['id']}/${request.params['token']}`,
+			request.body,
+			{
+				headers: {
+					'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+					'Accept-Language': 'en-GB',
+					Referer: 'https://www.bracketed.co.uk',
+					'Sec-Fetch-Site': 'same-origin',
+					'Sec-Fetch-Mode': 'cors',
+					'Sec-Fetch-Dest': 'empty',
+					'Accept-Encoding': 'gzip, deflate, br',
+					Connection: 'keep-alive',
+					'Content-Type': 'application/json',
+				},
+			}
+		)
+		.then(() => true)
+		.catch(() => false);
+
+	if (WebhookPost) return response.status(201).json('WEBHOOK SENT');
+	return response.status(500).json('WEBHOOK ERROR ON SEND');
 });
 
 console.clear();
