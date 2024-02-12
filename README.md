@@ -30,4 +30,8 @@ services:
                         # - PROXY_TOKEN="SOMETHING_RANDOM_SOMETHING_MAD"
 ```
 
+If you wish to use our CLI tool for creating keys for this system use either the following commands:
+Yarn: `yarn create @bracketed/keygen`
+NPM: `npx @bracketed/create-keygen`
+
 Enjoy!
